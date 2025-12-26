@@ -83,25 +83,25 @@ We trick the `WS2812` command by treating **15 physical RGBWW LEDs as 25 virtual
 - 15 LEDs × 40 bits = 600 bits total
 - 25 LEDs × 24 bits = 600 bits total
 
-However, the byte boundaries don't align cleanly, creating three different interlacing patterns that repeat every 3 LEDs:
+However, the byte boundaries don't align cleanly, creating three different interlacing patterns that repeat every 3 LEDs and something much stranger is that fore some reason(timing issue?, picomite bug?), the bytes of the patern 2 and 3 are interlaced and not in the normal order:
 
 #### Pattern 1: LEDs 0, 3, 6, 9, 12 (Clean Alignment)
 ```
-Virtual LED n:   [R G B]
-Virtual LED n+1: [W1 W2 R_next]
+Virtual LED n:   [R G B] 
+Virtual LED n+1: [W1 W2 R_next] 
 ```
 
 #### Pattern 2: LEDs 1, 4, 7, 10, 13 (1-byte Offset)
 ```
-Virtual LED n:   [? R G]
-Virtual LED n+1: [B W1 W2]
+Virtual LED n+1: [W1_prior W2_prior R ]
+Virtual LED n+2: [B G W2]
 ```
 
 #### Pattern 3: LEDs 2, 5, 8, 11, 14 (2-byte Offset)
 ```
-Virtual LED n:   [? ? R]
-Virtual LED n+1: [G B W1]
-Virtual LED n+2: [W2 ? ?]
+Virtual LED n+3: [R W1_prior G]
+Virtual LED n+4: [W2 B W1]
+
 ```
 
 The code handles this interlacing automatically in the `set_color()` and `set_color_raw()` functions.
